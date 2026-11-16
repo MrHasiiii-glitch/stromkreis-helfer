@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stromkreis-Helfer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0a7ea4">
+<style>
+:root{--bg:#f3f6f8;--card:#fff;--ink:#12181c;--mute:#5a6770;--line:#dbe2e7;--acc:#0a7ea4;--acc-ink:#fff;--ok:#0a7d3b;--okbg:#e4f5ea;--warn:#8a5a00;--warnbg:#fff3d1;--bad:#b00020;--badbg:#fde7ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1417;--card:#171e23;--ink:#edf2f5;--mute:#93a1ab;--line:#28323a;--acc:#35b6e0;--acc-ink:#04202b;--ok:#5fd68c;--okbg:#10281a;--warn:#f2c66b;--warnbg:#2c2410;--bad:#ff7a8c;--badbg:#32121a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:8px 0 2px}.sub{color:var(--mute);margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+h2{font-size:1.05rem;margin:0 0 6px}
+.hint,.small{color:var(--mute);font-size:.88rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:8px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;font:inherit;cursor:pointer}
+.tab.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.f{flex:1;min-width:130px}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:3px}
+input,select{padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;width:100%}
+.btn{padding:9px 14px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);border-radius:10px;font:inherit;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--acc)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);cursor:pointer;font:inherit;font-size:.9rem}
+.bar{height:30px;border-radius:99px;background:var(--line);overflow:hidden;position:relative;margin:10px 0}
+.fill{height:100%;transition:width .2s;background:var(--ok)}
+.mark{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5}
+.verdict{border-radius:12px;padding:12px;margin:8px 0;font-weight:600}
+.v-ok{background:var(--okbg);color:var(--ok)}.v-warn{background:var(--warnbg);color:var(--warn)}.v-bad{background:var(--badbg);color:var(--bad)}
+.big{font-size:1.8rem;font-weight:700}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:.78rem;color:var(--mute);font-weight:600}
+td input{padding:7px}
+.x{border:0;background:none;color:var(--mute);font-size:1.1rem;cursor:pointer}
+details{border-top:1px solid var(--line);padding:8px 0}summary{cursor:pointer;font-weight:600}
+.dis{font-size:.82rem;color:var(--mute);border-top:1px solid var(--line);margin-top:20px;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔌 Stromkreis-Helfer</h1>
+  <p class="sub">Wie viel darfst du an einen Stromkreis hängen, bevor die Sicherung fliegt?</p>
+  <div class="tabs" id="tabs"></div>
+  <div id="main"></div>
+  <div class="card"><h2>Kurz erklärt</h2>
+    <details><summary>Was ist ein Stromkreis?</summary><p>Alles, was an derselben Sicherung im Kasten hängt, z. B. „Küche Steckdosen“ oder „Wohnzimmer“. Die Sicherung schützt das <b>Kabel</b> vor Überhitzung. Alle Geräte an diesem Kreis teilen sich die Leistung.</p></details>
+    <details><summary>Watt, Ampere, Volt</summary><p>Steckdose = 230 V. <b>Watt ÷ 230 = Ampere.</b> Eine 16-A-Sicherung verträgt 16 × 230 = 3680 W. Watt steht auf dem Typenschild oder im Datenblatt des Geräts.</p></details>
+    <details><summary>Warum nur 80 % nutzen?</summary><p>Geräte, die lange laufen (Heizlüfter, Waschmaschine, Backofen), erwärmen Kabel und Sicherung. Mit etwa 80 % Dauerlast hast du Reserve für Einschaltspitzen und warme Räume.</p></details>
+    <details><summary>Fliegt die Sicherung sofort bei zu viel?</summary><p>Nicht unbedingt. Bei leichter Überlast kann es Minuten oder länger dauern, in der Zeit wird das Kabel warm. Deshalb nicht dauerhaft über 100 % fahren.</p></details>
+    <details><summary>Darf ich eine größere Sicherung einbauen?</summary><p><b>Nein.</b> Die Sicherung muss zum Kabel passen. Eine zu große Sicherung schützt das Kabel nicht mehr, das ist ein Brandrisiko. Arbeiten im Sicherungskasten macht nur eine Elektrofachkraft.</p></details>
+    <details><summary>Was sind die Kabelgrößen?</summary><p>1,5 mm² ist üblich für Licht (max. 16 A Sicherung), 2,5 mm² für Steckdosen. Steht auf dem Kabel oder im Plan. Im Zweifel Elektriker fragen.</p></details>
+  </div>
+  <p class="dis">Orientierungshilfe mit vereinfachten Werten. Sie ersetzt keine Prüfung durch eine Elektrofachkraft. Arbeiten an der Installation (Sicherungskasten, Leitungen) gehören nicht in Laienhand.</p>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nf = n => Math.round(n).toLocaleString('de-DE');
+const V = 230;
+const FUSES = [10, 13, 16, 20, 25, 32];
+const MAXFUSE = { 1.5: 16, 2.5: 20, 4: 25, 6: 32 }; // höchste passende Sicherung je Kabelquerschnitt (vorsichtig)
+const PRE = [['LED-Lampe', 10], ['Router / Modem', 15], ['Handy-Ladegerät', 20], ['Laptop', 65], ['Fernseher', 100], ['Kühlschrank', 150], ['Gefrierschrank', 150], ['PC mit Monitor', 350], ['Mikrowelle', 1200], ['Kaffeemaschine', 1000], ['Toaster', 900], ['Staubsauger', 1400], ['Wasserkocher', 2000], ['Föhn', 2000], ['Heizlüfter', 2000], ['Geschirrspüler', 2000], ['Bügeleisen', 2200], ['Waschmaschine', 2200], ['Trockner', 2500], ['Backofen', 3000]];
+
+let D = { act: 0, kreise: [{ name: 'Stromkreis 1', fuse: 16, mm2: 2.5, items: [] }] };
+try { const s = JSON.parse(localStorage.getItem('sk-v1')); if (s && s.kreise && s.kreise.length) D = s; } catch (e) {}
+const save = () => { try { localStorage.setItem('sk-v1', JSON.stringify(D)); } catch (e) {} };
+const cur = () => D.kreise[D.act] || (D.act = 0, D.kreise[0]);
+
+function renderTabs() {
+  $('#tabs').innerHTML = D.kreise.map((k, i) => `<button class="tab ${i === D.act ? 'on' : ''}" data-i="${i}">${esc(k.name)}</button>`).join('') + '<button class="tab" id="newk">+ Neu</button>';
+  $('#tabs').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { D.act = +b.dataset.i; save(); renderAll(); });
+  $('#newk').onclick = () => { D.kreise.push({ name: 'Stromkreis ' + (D.kreise.length + 1), fuse: 16, mm2: 2.5, items: [] }); D.act = D.kreise.length - 1; save(); renderAll(); };
+}
+
+function renderMain() {
+  const k = cur();
+  $('#main').innerHTML = `
+  <div class="card"><h2>Dein Stromkreis</h2>
+    <div class="row">
+      <div class="f"><label>Name (z. B. Küche)</label><input id="nm" value="${esc(k.name)}"></div>
+      <div class="f"><label>Sicherung (steht im Kasten)</label><select id="fu">${FUSES.map(f => `<option ${f === k.fuse ? 'selected' : ''} value="${f}">${f} A</option>`).join('')}</select></div>
+      <div class="f"><label>Kabel (Querschnitt)</label><select id="mm">${[1.5, 2.5, 4, 6].map(m => `<option ${m === k.mm2 ? 'selected' : ''} value="${m}">${String(m).replace('.', ',')} mm²</option>`).join('')}<option value="0" ${k.mm2 === 0 ? 'selected' : ''}>weiß ich nicht</option></select></div>
+    </div>
+    <p class="hint">Kein Plan? Dann schau im Sicherungskasten: „B16“ = 16 A, „B10“ = 10 A. Steckdosenkreise sind meist 16 A.</p>
+  </div>
+  <div class="card" id="sum"></div>
+  <div class="card"><h2>Geräte an diesem Kreis</h2>
+    <p class="hint">Tippe ein Gerät an, um es hinzuzufügen. Watt kannst du ändern. Schalter „an“ = läuft gleichzeitig.</p>
+    <div class="chips">${PRE.map((p, i) => `<button class="chip" data-p="${i}">+ ${esc(p[0])} (${p[1]} W)</button>`).join('')}<button class="chip" data-p="-1">+ Eigenes Gerät</button></div>
+    <div id="list"></div>
+  </div>
+  <div class="row"><button class="btn ghost" id="clr">Geräte leeren</button><button class="btn ghost" id="del">Diesen Stromkreis löschen</button></div>`;
+  $('#nm').oninput = e => { k.name = e.target.value || 'Stromkreis'; save(); renderTabs(); };
+  $('#fu').onchange = e => { k.fuse = +e.target.value; save(); renderSum(); };
+  $('#mm').onchange = e => { k.mm2 = +e.target.value; save(); renderSum(); };
+  $('#main').querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.p; const p = PRE[i] || ['Eigenes Gerät', 500];
+    k.items.push({ name: p[0], w: p[1], qty: 1, on: true }); save(); renderList(); renderSum();
+  });
+  $('#clr').onclick = () => { k.items = []; save(); renderList(); renderSum(); };
+  $('#del').onclick = () => { if (D.kreise.length === 1) { k.items = []; k.name = 'Stromkreis 1'; } else { D.kreise.splice(D.act, 1); D.act = 0; } save(); renderAll(); };
+  renderList(); renderSum();
+}
+
+function renderList() {
+  const k = cur();
+  $('#list').innerHTML = k.items.length ? `<table><tr><th>an</th><th>Gerät</th><th>Watt</th><th>Stk.</th><th></th></tr>${k.items.map((it, i) => `<tr>
+    <td><input type="checkbox" data-o="${i}" ${it.on ? 'checked' : ''} style="width:22px;height:22px"></td>
+    <td>${esc(it.name)}</td>
+    <td><input type="number" min="0" data-w="${i}" value="${it.w}" style="width:84px"></td>
+    <td><input type="number" min="1" data-q="${i}" value="${it.qty}" style="width:64px"></td>
+    <td><button class="x" data-x="${i}">✕</button></td></tr>`).join('')}</table>` : '<p class="small">Noch keine Geräte.</p>';
+  $('#list').querySelectorAll('[data-o]').forEach(e => e.onchange = () => { k.items[+e.dataset.o].on = e.checked; save(); renderSum(); });
+  $('#list').querySelectorAll('[data-w]').forEach(e => e.oninput = () => { k.items[+e.dataset.w].w = Math.max(0, parseFloat(e.value) || 0); save(); renderSum(); });
+  $('#list').querySelectorAll('[data-q]').forEach(e => e.oninput = () => { k.items[+e.dataset.q].qty = Math.max(1, parseInt(e.value) || 1); save(); renderSum(); });
+  $('#list').querySelectorAll('[data-x]').forEach(e => e.onclick = () => { k.items.splice(+e.dataset.x, 1); save(); renderList(); renderSum(); });
+}
+
+function renderSum() {
+  const k = cur();
+  const total = k.items.reduce((s, i) => s + (i.on ? i.w * i.qty : 0), 0);
+  const max = k.fuse * V, dauer = max * 0.8;
+  const pct = total / max * 100;
+  const amps = total / V;
+  const frei = Math.max(0, dauer - total);
+  const cableBad = k.mm2 > 0 && k.fuse > MAXFUSE[k.mm2];
+  let cls, txt;
+  if (pct <= 80) { cls = 'v-ok'; txt = `✅ Passt. Du hast noch ca. ${nf(frei)} W frei (bis 80 %).`; }
+  else if (pct <= 100) { cls = 'v-warn'; txt = '⚠ Knapp. Dauerhaft zu viel. Sicherung kann bei längerem Betrieb auslösen und das Kabel wird warm.'; }
+  else { cls = 'v-bad'; txt = '⛔ Zu viel. Die Sicherung wird auslösen. Verteile Geräte auf einen anderen Stromkreis.'; }
+  const big = k.items.filter(i => i.on && i.w >= 2000).reduce((s, i) => s + i.qty, 0);
+  const passt = PRE.filter(p => p[1] <= frei).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  $('#sum').innerHTML = `
+    <div class="row" style="align-items:baseline"><div class="big">${nf(total)} W</div><div class="small">von ${nf(max)} W max. (${nf(dauer)} W dauerhaft sinnvoll) · ${amps.toFixed(1).replace('.', ',')} A von ${k.fuse} A</div></div>
+    <div class="bar"><div class="fill" style="width:${Math.min(100, pct)}%;background:${pct <= 80 ? 'var(--ok)' : pct <= 100 ? 'var(--warn)' : 'var(--bad)'}"></div><div class="mark" style="left:80%"></div></div>
+    <div class="small">Die Linie bei 80 % = empfohlene Dauergrenze.</div>
+    <div class="verdict ${cls}">${txt}</div>
+    ${cableBad ? `<div class="verdict v-bad">⛔ ${k.fuse} A ist zu groß für ${String(k.mm2).replace('.', ',')} mm² Kabel (dort max. ${MAXFUSE[k.mm2]} A). Das ist gefährlich. Bitte Elektriker prüfen lassen, nicht selbst ändern.</div>` : ''}
+    ${k.mm2 === 0 ? '<div class="verdict v-warn">Kabelgröße unbekannt: ich kann nicht prüfen, ob die Sicherung zum Kabel passt.</div>' : ''}
+    ${big >= 2 ? '<div class="verdict v-warn">Mehrere große Verbraucher (ab 2000 W) gleichzeitig. Besser auf getrennte Stromkreise legen.</div>' : ''}
+    ${passt.length && pct < 80 ? `<p class="small"><b>Das passt noch dazu:</b> ${passt.map(p => esc(p[0])).join(', ')}.</p>` : ''}`;
+}
+
+function renderAll() { renderTabs(); renderMain(); }
+renderAll();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
